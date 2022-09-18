@@ -218,14 +218,14 @@ local Window = Library:CreateWindow({ Title = 'Kaoru Hub', Center = true, AutoSh
         end
 
         local section = Tabs.Main:AddRightTabbox('Credits'):AddTab('Credits') do
-            section:AddLabel('Creator: <font color="#3EB489">Trustsense</font>')
+            section:AddLabel('Creator: <font color="#3EB489">Kaoru</font>')
 
-            section:AddLabel('Interface: <font color="#ADD8E6">wally</font>')
+            section:AddLabel('Interface: <font color="#ADD8E6">DonLikesThisColor</font>')
         end
 
         local section = Tabs.Main:AddRightTabbox('Discord'):AddTab('Discord') do
             section:AddButton('Copy discord invite', function()
-                setclipboard('https://discord.gg/JUEu7XFBXD')
+                setclipboard('https://discord.gg/eppfJYrn')
             end)
 
             section:AddButton('Open Invite', function()
