@@ -1,0 +1,321 @@
+---@diagnostic disable: undefined-global
+-- # load and library
+if not game:IsLoaded() then
+    game.Loaded:Wait()
+end
+
+local repo = 'https://raw.githubusercontent.com/wally-rblx/LinoriaLib/main/'
+
+local Library = loadstring(game:HttpGet(repo .. 'Library.lua'))()
+local ThemeManager = loadstring(game:HttpGet(repo .. 'addons/ThemeManager.lua'))()
+local SaveManager = loadstring(game:HttpGet(repo .. 'addons/SaveManager.lua'))()
+
+
+-- #variables
+local players = game:GetService("Players")
+local plr = players.LocalPlayer
+local char = plr.Character or plr.CharacterAdded:Wait()
+local root = char:WaitForChild("HumanoidRootPart")
+local wrk = game:GetService("Workspace")
+local rep = game:GetService("ReplicatedStorage")
+local tSpawn, tWait = task.spawn, task.wait
+local state = wrk.Train.Portal.Next.Letter.SurfaceGui
+local state1 = plr.PlayerGui.MainUi.RefreshBossTip.Bg
+
+
+-- # functions
+local funcs = {} do
+    shared.funcs = funcs
+
+    function funcs:TP(path)
+        if path then
+            root.CFrame = CFrame.new(path.Position)
+        end
+    end
+
+    function funcs:clstMob(Level)
+            local target, dist = nil, math.huge
+            for _, v in next, wrk.GhostPos[Level]:GetChildren() do
+            if v:IsA("BasePart") and v:FindFirstChildWhichIsA("Model") then
+                local magn = (v.Position - root.Position).magnitude
+                if magn < dist then
+                    dist = magn
+                    target = v
+                end
+            end
+        end
+		return target
+    end
+
+    function funcs:farmBoss()
+        for _, v in next, wrk.Maps:GetChildren() do
+            if tostring(v.Name):find("Boss_") then
+                funcs:TP(v.HumanoidRootPart)
+            end
+        end
+    end
+
+    function funcs:farmTrain()
+        if plr.IsInTrain.Value == false then
+            fireproximityprompt(wrk.Maps.TrainStations.Entrance.EnterTrainTrigger.ProximityPrompt)
+        end
+
+        if plr.PlayerGui.MainUi.EnterTrainTip.Visible == true then
+            firesignal(plr.PlayerGui.MainUi.EnterTrainTip.Bg.OkButton.MouseButton1Click)
+            tWait(3)
+        end
+
+        if plr.IsInTrain.Value == true then
+            for _, v in next, wrk.TrainGhosts:WaitForChild(plr.Name):GetChildren() do
+                if v:FindFirstChild("HumanoidRootPart", true) then
+                    funcs:TP(v.HumanoidRootPart)
+                end
+            end
+        end
+
+        if state.Enabled == true then
+            fireproximityprompt(wrk.Train.Train.ContinueTrigger.ProximityPrompt)
+            tWait(3)
+        end
+    end
+
+    function funcs:CollectSoul()
+		for _, v in next, wrk.Souls:GetChildren() do
+			if v:IsA("BasePart") then
+				v.CFrame = root.CFrame
+			end
+		end
+	end
+
+    function funcs:GetClosestChest()
+		local target, dist = nil, math.huge
+		for _, v in next, wrk.ChestPoints:GetDescendants() do
+			if v:FindFirstChildWhichIsA("Model") then
+				local magn = (v.Position - root.Position).magnitude
+				if magn < dist then
+					dist = magn
+					target = v
+				end
+			end
+		end
+		return target
+	end
+
+    function funcs:Invite()
+        if not isfolder('Mint') then
+            makefolder('Mint')
+        end
+        if isfile('Mint.txt') == false then
+            (syn and syn.request or http_request)({
+                Url = 'http://127.0.0.1:6463/rpc?v=1',
+                Method = 'POST',
+                Headers = {
+                    ['Content-Type'] = 'application/json',
+                    ['Origin'] = 'https://discord.com'
+                },
+                Body = game:GetService('HttpService'):JSONEncode({
+                    cmd = 'INVITE_BROWSER',
+                    args = {
+                        code = 'JUEu7XFBXD'
+                    },
+                    nonce = game:GetService('HttpService'):GenerateGUID(false)
+                }),
+                writefile('Mint.txt', 'discord')
+            })
+        end
+    end
+end
+
+-- # tables
+local arr = {} do
+    shared.arr = arr
+
+    function arr:getLevels()
+        local items = {}
+		for _, v in next, wrk.GhostPos:GetChildren() do
+			if v:IsA("Folder") then
+				table.insert(items, v.Name)
+			end
+		end
+		return items
+    end
+
+    function arr:Binds()
+		return { ["Q"] = 1, ["E"] = 2, ["R"] = 3 }
+	end
+
+    function arr:Codes()
+		return { 
+            "Welcome",
+			"thanks3000likes",
+			"1000likes",
+			"adou6000likes",
+			"liangzai20klikes",
+			"demon",
+			"demonsoul",
+			"demon150k",
+            "demonsoul200k",
+        }
+    end
+end
+
+-- # elements
+local Window = Library:CreateWindow({ Title = 'Kaoru Hub', Center = true, AutoShow = true }) do
+    local Tabs = { Main = Window:AddTab('Main'), ['UI Settings'] = Window:AddTab('UI Settings') } do
+      
+        local section = Tabs.Main:AddLeftTabbox('Farm'):AddTab('Auto Farm') do
+            section:AddDropdown('level', { Values = arr:getLevels(), Default = "Leve1", Multi = false, Text = 'Level' })
+
+            section:AddToggle('auto_farm', { Text = 'Auto Farm', Default = false })
+
+            section:AddToggle('auto_boss', { Text = 'Auto Boss', Default = false })
+
+            section:AddToggle('auto_train', { Text = 'Auto Train', Default = false })    
+        end
+
+        local section = Tabs.Main:AddLeftTabbox('Binds'):AddTab('Auto Bind') do
+            section:AddDropdown('bind', { Values = arr:Binds(), Default = "1", Multi = true, Text = 'Binds' })
+
+            section:AddToggle('auto_bind', { Text = 'Auto Press Bind', Default = false })
+        end
+
+        local section = Tabs.Main:AddRightTabbox('Auto Collect'):AddTab('Auto Collect') do
+            section:AddToggle("auto_souls", { Text = 'Auto Collect Souls', Default = false })
+
+            section:AddToggle("auto_chest", { Text = 'Auto Collect Chests', Default = false })
+
+            section:AddToggle("auto_rewards", { Text = 'Auto Accept Rewards', Default = false })
+        end
+
+        local section = Tabs.Main:AddRightTabbox('Miscellaneous'):AddTab('Miscellaneous') do
+            section:AddToggle('auto_wheel', { Text = 'Auto Wheel', Default = false })
+
+            section:AddButton("Redeem All Codes", function()
+                for _, v in next, arr:Codes() do
+                    rep.RemoteEvents.Code:FireServer(v)
+                end
+            end)
+
+            section:AddButton("Teleport To Boss Room", function()
+                funcs:TP(wrk.Maps.BossHouse.BossSpawnPos["BossRoomPos_1"])
+            end)
+        end
+
+        local section = Tabs.Main:AddRightTabbox('Auto Draw Characters'):AddTab('Auto Draw Characters') do
+            section:AddSlider('draw_times', { Text = 'Draws', Default = 10, Min = 1, Max = 500, Rounding = 0, Compact = false })
+
+            section:AddButton('Draw', function()
+                for _ = 1, tonumber(Options.draw_times.Value) do
+                    rep.RemoteEvents.DrawRole:FireServer(false)
+                end
+            end)
+        end
+
+        local section = Tabs.Main:AddLeftTabbox('Local Player'):AddTab('Local Player') do
+            section:AddSlider('speed', { Text = 'WalkSpeed Value', Default = 18, Min = 1, Max = 200, Rounding = 2, Compact = false })
+
+            section:AddSlider('jump', { Text = 'JumpPower Value', Default = 50, Min = 1, Max = 200, Rounding = 2, Compact = false })
+        end
+
+        local section = Tabs.Main:AddRightTabbox('Credits'):AddTab('Credits') do
+            section:AddLabel('Creator: <font color="#3EB489">Trustsense</font>')
+
+            section:AddLabel('Interface: <font color="#ADD8E6">wally</font>')
+        end
+
+        local section = Tabs.Main:AddRightTabbox('Discord'):AddTab('Discord') do
+            section:AddButton('Copy discord invite', function()
+                setclipboard('https://discord.gg/JUEu7XFBXD')
+            end)
+
+            section:AddButton('Open Invite', function()
+                funcs:Invite()
+            end)
+        end
+
+        local section = Tabs['UI Settings']:AddLeftGroupbox('Menu')
+        section:AddButton('Unload', function()
+            Library:Unload()
+        end)
+        section:AddLabel('Menu bind'):AddKeyPicker('MenuKeybind', { Default = 'End', NoUI = true, Text = 'Menu keybind' })
+        Library.ToggleKeybind = Options.MenuKeybind
+        ThemeManager:SetLibrary(Library)
+        SaveManager:SetLibrary(Library)
+        SaveManager:IgnoreThemeSettings()
+        SaveManager:SetIgnoreIndexes({ 'MenuKeybind' })
+        ThemeManager:SetFolder('MyScriptHub')
+        SaveManager:SetFolder('MyScriptHub/demonsoul')
+        SaveManager:BuildConfigSection(Tabs['UI Settings'])
+        ThemeManager:ApplyToTab(Tabs['UI Settings'])
+    end
+end
+
+-- # events
+tSpawn(function()
+    while tWait() do
+        if Toggles.auto_bind.Value then
+           for j, _ in next, Options.bind.Value do
+                for _, v in next, arr:Binds() do
+                    if j == v then
+                        rep.RemoteEvents.SkillAttack:FireServer(v)
+                    end
+                end
+           end
+        end
+    end
+end)
+
+tSpawn(function()
+	while tWait(0.2) do
+		if Toggles.auto_farm.Value and Toggles.auto_train.Value and Toggles.auto_boss.Value and state1.Visible == true then
+            rep.RemoteEvents.GeneralAttack:FireServer()
+            funcs:farmBoss()
+		else
+			if Toggles.auto_farm.Value and Toggles.auto_train.Value then
+                rep.RemoteEvents.GeneralAttack:FireServer()
+                funcs:farmTrain()
+			else
+				if Toggles.auto_farm.Value and Toggles.auto_boss.Value and state1.Visible == true then
+                    rep.RemoteEvents.GeneralAttack:FireServer()
+                    funcs:farmBoss()
+				else
+					if Toggles.auto_farm.Value then
+                        rep.RemoteEvents.GeneralAttack:FireServer()
+                        funcs:TP(funcs:clstMob(Options.level.Value))
+					end
+                end
+			end
+		end
+	end
+end)
+
+tSpawn(function()
+    while tWait() do
+        if Toggles.auto_souls.Value then
+            funcs:CollectSoul()
+        end
+        if Toggles.auto_chest.Value then
+            funcs:TP(funcs:GetClosestChest())
+        end
+        if Toggles.auto_rewards.Value then
+            for _, v in next, getconnections(plr.PlayerGui.MainUi.GetRewardFrame.Bg.CloseButton.MouseButton1Click) do v.Function() end
+        end
+    end
+end)
+
+tSpawn(function()
+    while tWait() do
+        if Toggles.auto_wheel.Value then
+            if plr.PlayerGui.MainUi.RouletteFrame.Rotate.CountDown.Text == "" then
+                rep.RemoteEvents.Roulette:FireServer()
+            end
+        end
+    end
+end)
+
+tSpawn(function()
+    while tWait() do
+        char.Humanoid.WalkSpeed = Options.speed.Value
+        char.Humanoid.JumpPower = Options.jump.Value
+    end
+end)
